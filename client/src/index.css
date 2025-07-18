@@ -1,0 +1,16 @@
+html,
+body,
+#app {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow-anchor: none;
+  overscroll-behavior: none;
+  background-color: #f1f5f9;
+}
+
+html {
+  font-family: 'Roboto';
+  --toastify-font-family: 'Roboto';
+}
