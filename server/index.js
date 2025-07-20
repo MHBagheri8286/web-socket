@@ -12,21 +12,124 @@ const wss = new WebSocket.Server({
   noServer: true,
 });
 
+const typingUsers = [];
+const messages = [];
+const allUsers = [];
+
+function updateAllUser() {
+  allUsers.forEach((wsClient) => {
+    if (wsClient.readyState === WebSocket.OPEN) {
+      wsClient.send(
+        JSON.stringify({
+          event: "all_users",
+          data: allUsers.map((wsClient) => ({ ...wsClient.user })),
+        })
+      );
+    }
+  });
+}
+
+function broadcastNewMessage(user, massage) {
+  allUsers.forEach((wsClient) => {
+    if (wsClient.readyState === WebSocket.OPEN) {
+      wsClient.send(
+        JSON.stringify({
+          event: "new_message",
+          data: { user, massage },
+        })
+      );
+    }
+  });
+}
+
+function broadcastTypingUsers() {
+  if (!typingUsers.length) {
+    console.log('hi there');
+    
+    wsClient.send(
+      JSON.stringify({
+        event: "show_typing_users",
+        data: [{name: 'ds'}],
+      })
+    );
+  }
+  typingUsers.forEach((wsClient) => {
+    if (wsClient.readyState === WebSocket.OPEN) {
+      wsClient.send(
+        JSON.stringify({
+          event: "show_typing_users",
+          data: typingUsers.map((wsClient) => ({ ...wsClient.user })),
+        })
+      );
+    }
+  });
+}
+
 wss.on("connection", function (ws) {
   wss.clients.add(ws);
-  ws.on("message", function (data) {
-    wss.clients.forEach((client) => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(data.toString());
+  ws.on("message", function (message) {
+    try {
+      const { event, data } = JSON.parse(message);
+      switch (event) {
+        case "add_user": {
+          ws.user = data;
+          allUsers.push(ws);
+          updateAllUser();
+          break;
+        }
+        case "remove_user": {
+          const findIndex = allUsers.findIndex(
+            (wsClient) => wsClient.user.name === data.name
+          );
+          if (findIndex !== -1) {
+            allUsers.splice(findIndex, 1);
+          }
+          break;
+        }
+        case "add_typing_users": {
+          typingUsers.push(ws);
+          broadcastTypingUsers();
+          break;
+        }
+        case "remove_typing_users": {
+          const findIndex = typingUsers.findIndex(
+            (wsClient) => wsClient === ws
+          );
+          if (findIndex !== -1) {
+            typingUsers.splice(findIndex, 1);
+          }
+          broadcastTypingUsers();
+          break;
+        }
+        case "new_message": {
+          messages.push({
+            content: data.message,
+            user: ws.user,
+          });
+          broadcastNewMessage(ws.user, data.message);
+          break;
+        }
+
+        case "update_status": {
+          const findWsClient = allUsers.find(
+            (wsClient) => wsClient.user.name === data.name
+          );
+          findWsClient.user.status = data.status;
+
+          updateAllUser();
+          break;
+        }
+
+        default:
+          break;
       }
-    });
+    } catch (error) {}
   });
 });
 
 server.on("upgrade", async function upgrade(request, socket, head) {
   // Do what you normally do in `verifyClient()` here and then use
   // `WebSocketServer.prototype.handleUpgrade()`.
-
   // Test for authentication
 
   wss.handleUpgrade(request, socket, head, function done(ws) {

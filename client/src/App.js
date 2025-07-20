@@ -1,31 +1,45 @@
-import React, { useEffect, useState } from "react";
-import { websocket } from "./websocket";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import UserRegistration from "./UserRegistration";
+import React, { useState } from "react";
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  useNavigate,
+} from "react-router-dom";
+import Chat from "./components/chat/Chat";
+import Registration from "./components/Registration";
 
 const App = () => {
-  const [isSignedIn, setIsSignedIn] = useState(false);
-
-  // useEffect(() => {
-  //   websocket();
-  // }, []);
+  const navigate = useNavigate();
+  const [user, setUser] = useState({});
 
   return (
     <div className="container-fluid">
-      <BrowserRouter>
         <Routes>
-          <Route path="/" element={<UserRegistration />} />
-          {/* <Route
+          <Route
+            path="/"
+            element={
+              <Registration
+                onRegister={(value) => {
+                  setUser(value);
+                  navigate('/chat');
+                }}
+              />
+            }
+          />
+          <Route
             path="/chat"
-            element={!isSignedIn ? <Navigate to="/" /> : <Chat />}
-          /> */}
+            element={!user.name ? <Navigate to="/" /> : <Chat user={user}/>}
+          />
         </Routes>
-      </BrowserRouter>
-      {/* <div id="messages"></div>
-      <input id="message_input" />
-      <button id="send">Send Message</button> */}
     </div>
   );
 };
 
-export default App;
+export default () => {
+  return (
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  );
+};
