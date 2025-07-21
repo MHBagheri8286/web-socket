@@ -1,17 +1,16 @@
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-const CopyWebpackPlugin = require("copy-webpack-plugin");
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
-  mode: "development",
+  mode: 'development',
   output: {
-    filename: "[name].[contenthash].js",
+    filename: '[name].[contenthash].js',
   },
   devServer: {
     port: 3000,
     historyApiFallback: true,
   },
-  resolve:{
-extensions: [".tsx", ".ts", ".js", ".jsx"]
+  resolve: {
+    extensions: ['.js', '.jsx'],
   },
   module: {
     rules: [
@@ -19,25 +18,30 @@ extensions: [".tsx", ".ts", ".js", ".jsx"]
         test: /\.(ts|tsx|js|jsx)$/,
         exclude: /node_modules/,
         use: {
-          loader: "babel-loader",
+          loader: 'babel-loader',
           options: {
-            presets: ["@babel/preset-react", "@babel/preset-env","@babel/preset-typescript",],
-            plugins: ["@babel/plugin-transform-runtime"],
+            presets: [
+              '@babel/preset-env',
+              [
+                '@babel/preset-react',
+                {
+                  runtime: 'automatic', // This enables automatic JSX runtime
+                },
+              ],
+            ],
+            plugins: ['@babel/plugin-transform-runtime'],
           },
         },
       },
       {
         test: /\.css$/i,
-        use: ["style-loader", "css-loader"],
+        use: ['style-loader', 'css-loader'],
       },
     ],
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: "./public/index.html",
-    }),
-    new CopyWebpackPlugin({
-      patterns: [{ from: "public/assets", to: "assets" }],
+      template: './public/index.html',
     }),
   ],
 };
