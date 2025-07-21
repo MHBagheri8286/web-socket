@@ -1,4 +1,4 @@
-const { ChatServer } = require("./modules/index");
+import { ChatServer } from "./modules/index.js";
 
 const PORT = 3001;
 
