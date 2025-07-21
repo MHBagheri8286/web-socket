@@ -1,16 +1,12 @@
-import express from "express";
-import http from "http";
-import path from "path";
-import { fileURLToPath } from "url";
-import { WebSocketServer } from "ws";
-import {
-  MessageBroadcaster,
+const express = require("express");
+const http = require("http");
+const path = require("path");
+const { WebSocketServer } = require("ws");
+const {
   UserManager,
+  MessageBroadcaster,
   WebSocketEventHandler,
-} from "./index.js";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+} = require("./index");
 
 class ChatServer {
   constructor(port) {
@@ -58,4 +54,4 @@ class ChatServer {
   }
 }
 
-export default ChatServer;
+module.exports = ChatServer;

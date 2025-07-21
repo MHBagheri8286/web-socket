@@ -57,4 +57,4 @@ class WebSocketEventHandler {
   }
 }
 
-export default WebSocketEventHandler;
+module.exports = WebSocketEventHandler;

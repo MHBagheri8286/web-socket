@@ -1,4 +1,4 @@
-import { WebSocket } from "ws";
+const { WebSocket } = require("ws");
 
 class MessageBroadcaster {
   constructor(userManager) {
@@ -31,4 +31,4 @@ class MessageBroadcaster {
   }
 }
 
-export default MessageBroadcaster;
+module.exports = MessageBroadcaster;
