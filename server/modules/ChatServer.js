@@ -2,7 +2,7 @@ const WebSocket = require("ws");
 const http = require("http");
 const express = require("express");
 const path = require("path");
-const { UserManager, MessageBroadcaster, WebSocketEventHandler } = require("./modules");
+const { UserManager, MessageBroadcaster, WebSocketEventHandler } = require("./index");
 
 class ChatServer {
   constructor(port) {
@@ -25,7 +25,6 @@ class ChatServer {
     this.wss = new WebSocket.Server({ noServer: true });
     
     this.wss.on("connection", (ws) => {
-      this.wss.clients.add(ws);
       ws.on("message", (message) => {
         this.eventHandler.handleMessage(ws, message);
       });
