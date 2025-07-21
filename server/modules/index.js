@@ -1,9 +1,9 @@
-const UserManager = require("./UserManager");
-const MessageBroadcaster = require("./MessageBroadcaster");
-const WebSocketEventHandler = require("./WebSocketEventHandler");
-const ChatServer = require("./ChatServer");
+import UserManager from "./UserManager.js";
+import MessageBroadcaster from "./MessageBroadcaster.js";
+import WebSocketEventHandler from "./WebSocketEventHandler.js";
+import ChatServer from "./ChatServer.js";
 
-module.exports = {
+export {
   UserManager,
   MessageBroadcaster,
   WebSocketEventHandler,

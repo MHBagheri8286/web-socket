@@ -59,4 +59,4 @@ class UserManager {
     }
   }
   
-  module.exports = UserManager;
+  export default UserManager;

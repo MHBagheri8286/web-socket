@@ -1,8 +1,16 @@
-const WebSocket = require("ws");
-const http = require("http");
-const express = require("express");
-const path = require("path");
-const { UserManager, MessageBroadcaster, WebSocketEventHandler } = require("./index");
+import express from "express";
+import http from "http";
+import path from "path";
+import { fileURLToPath } from "url";
+import { WebSocketServer } from "ws";
+import {
+  MessageBroadcaster,
+  UserManager,
+  WebSocketEventHandler,
+} from "./index.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 class ChatServer {
   constructor(port) {
@@ -11,19 +19,25 @@ class ChatServer {
     this.server = http.createServer(this.app);
     this.userManager = new UserManager();
     this.broadcaster = new MessageBroadcaster(this.userManager);
-    this.eventHandler = new WebSocketEventHandler(this.userManager, this.broadcaster);
-    
+    this.eventHandler = new WebSocketEventHandler(
+      this.userManager,
+      this.broadcaster
+    );
+
     this.setupExpress();
     this.setupWebSocket();
   }
 
   setupExpress() {
-    this.app.use("/", express.static(path.resolve(__dirname, "../client/dist")));
+    this.app.use(
+      "/",
+      express.static(path.resolve(__dirname, "../../client/dist"))
+    );
   }
 
   setupWebSocket() {
-    this.wss = new WebSocket.Server({ noServer: true });
-    
+    this.wss = new WebSocketServer({ noServer: true });
+
     this.wss.on("connection", (ws) => {
       ws.on("message", (message) => {
         this.eventHandler.handleMessage(ws, message);
@@ -44,4 +58,4 @@ class ChatServer {
   }
 }
 
-module.exports = ChatServer;
+export default ChatServer;
