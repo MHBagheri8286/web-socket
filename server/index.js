@@ -29,13 +29,13 @@ function updateAllUser() {
   });
 }
 
-function broadcastNewMessage(user, massage) {
+function broadcastNewMessage(user, message) {
   allUsers.forEach((wsClient) => {
     if (wsClient.readyState === WebSocket.OPEN) {
       wsClient.send(
         JSON.stringify({
           event: "new_message",
-          data: { user, massage },
+          data: { user, message },
         })
       );
     }
@@ -43,22 +43,13 @@ function broadcastNewMessage(user, massage) {
 }
 
 function broadcastTypingUsers() {
-  if (!typingUsers.length) {
-    console.log('hi there');
-    
-    wsClient.send(
-      JSON.stringify({
-        event: "show_typing_users",
-        data: [{name: 'ds'}],
-      })
-    );
-  }
-  typingUsers.forEach((wsClient) => {
+  allUsers.forEach((wsClient) => {
     if (wsClient.readyState === WebSocket.OPEN) {
       wsClient.send(
         JSON.stringify({
           event: "show_typing_users",
-          data: typingUsers.map((wsClient) => ({ ...wsClient.user })),
+          data: typingUsers
+            .map((wsClient) => ({ ...wsClient.user })),
         })
       );
     }
@@ -79,7 +70,7 @@ wss.on("connection", function (ws) {
         }
         case "remove_user": {
           const findIndex = allUsers.findIndex(
-            (wsClient) => wsClient.user.name === data.name
+            (wsClient) => wsClient.user.name === data
           );
           if (findIndex !== -1) {
             allUsers.splice(findIndex, 1);
@@ -98,7 +89,7 @@ wss.on("connection", function (ws) {
           if (findIndex !== -1) {
             typingUsers.splice(findIndex, 1);
           }
-          broadcastTypingUsers();
+          broadcastTypingUsers(ws.user);
           break;
         }
         case "new_message": {

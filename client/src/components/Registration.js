@@ -31,6 +31,7 @@ const Registration = ({ onRegister }) => {
               <label htmlFor="registeredUser">Enter username:</label>
               <input
                 type="text"
+                id="registeredUser"
                 className="form-control"
                 {...register("userName")}
                 placeholder="Enter username"
