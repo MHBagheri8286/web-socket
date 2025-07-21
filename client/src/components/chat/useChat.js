@@ -1,21 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 
-export function useChat(user, register, reset, clearErrors) {
+WebSocket.prototype.emit = function (event, data) {
+  this.send(JSON.stringify({ event, data }));
+};
+
+WebSocket.prototype.listen = function (eventName, callback) {
+  this._socketListeners = this._socketListeners || {};
+  this._socketListeners[eventName] = callback;
+};
+
+export function useChat(user, reset, clearErrors) {
   const [users, setUsers] = useState([]);
   const [chats, setChats] = useState([]);
+  const [typingUsers, setTypingUsers] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
   const socketRef = useRef(null);
-
-  useEffect(() => {
-    WebSocket.prototype.emit = function (event, data) {
-      this.send(JSON.stringify({ event, data }));
-    };
-
-    WebSocket.prototype.listen = function (eventName, callback) {
-      this._socketListeners = this._socketListeners || {};
-      this._socketListeners[eventName] = callback;
-    };
-  }, []);
 
   useEffect(() => {
     if (!socketRef.current) {
@@ -33,27 +32,19 @@ export function useChat(user, register, reset, clearErrors) {
           socketRef.current._socketListeners?.[event](data);
         } catch (error) {}
       };
-
-      socketRef.current.onclose = () => {
-        socketRef.current.emit("remove_user", user.name);
-        socketRef.current = null;
-      };
     }
-
-    // Appending new message
-    socketRef.current.listen("new_message", (data) => {
-      chats.push(data);
-      setChats(chats.slice());
-      console.log(chats);
-    });
 
     socketRef.current.listen("all_users", (data) => {
       setUsers(data);
     });
 
-    socketRef.current.listen("show_typing_users", (data) => {
-console.log(data);
+    socketRef.current.listen("new_message", (data) => {
+      chats.push(data);
+      setChats(chats.slice());
+    });
 
+    socketRef.current.listen("show_typing_users", (data) => {
+      setTypingUsers(data.filter(x=> x.name !== user.name));
     });
   }, []);
 
@@ -66,13 +57,11 @@ console.log(data);
         socketRef.current.readyState === WebSocket.OPEN
       ) {
         if (isVisible) {
-          console.log("User returned to chat");
           socketRef.current.emit("update_status", {
             ...user,
             status: "online",
           });
         } else {
-          console.log("User left chat tab");
           socketRef.current.emit("update_status", {
             ...user,
             status: "offline",
@@ -89,20 +78,20 @@ console.log(data);
   }, []);
 
   useEffect(() => {
-    // Add beforeunload listener
-    window.addEventListener("beforeunload", closeSocket);
+    window.addEventListener("beforeunload", removeUser);
 
     return () => {
-      // Remove beforeunload listener
-      window.removeEventListener("beforeunload", closeSocket);
+      removeUser();
+      window.removeEventListener("beforeunload", removeUser);
     };
 
-    function closeSocket() {
+    function removeUser() {
       if (
         socketRef.current &&
         socketRef.current.readyState === WebSocket.OPEN
       ) {
-        socketRef.current.close();
+        socketRef.current.emit("remove_user", user.name);
+        socketRef.current = null;
       }
     }
   }, []);
@@ -147,6 +136,7 @@ console.log(data);
   return {
     users,
     chats,
+    typingUsers,
     onSubmit,
     handleClearChat,
     handleTyping,

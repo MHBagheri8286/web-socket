@@ -19,7 +19,7 @@ const Chat = ({ user }) => {
     resolver: yupResolver(ChatSchema),
   });
 
-  const { chats, users, onSubmit, handleClearChat, handleTyping, stopTyping } =
+  const { chats, users, typingUsers, onSubmit, handleClearChat, handleTyping, stopTyping } =
     useChat(user, reset, register, clearErrors);
 
   const handleInputChange = (e) => {
@@ -38,8 +38,8 @@ const Chat = ({ user }) => {
       <div className="row">
         <div className="col-md-3 col-md-offset-0">
           <div className="well">
-            <label htmlFor="users">Online Users:</label>
-            <ul id="users">
+            <h4>Online Users:</h4>
+            <ul className="users">
               {users.map((user, index) => (
                 <li key={index}>
                   {user.name} {user.status}
@@ -48,9 +48,13 @@ const Chat = ({ user }) => {
             </ul>
           </div>
         </div>
-
         <div className="col-md-8 chat-div">
-          <div id="chats"></div>
+          <div className="chats">
+            {chats.map((chat, index)=> <div key={index}>{`${chat.user?.name}: ${chat.message}`}</div>)}
+          </div>
+          <div className="typing-users">
+            {typingUsers.map((user, index)=> <div key={index}>{`${user?.name} is typing`}</div>)}
+          </div>
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="well" id="typeMsgSection">
               <label htmlFor="sentMessage" className="people-typing">
@@ -68,7 +72,7 @@ const Chat = ({ user }) => {
               />
               {errors.message && (
                 <div className="alert alert-danger">
-                  <p>Blank messages are not entertained</p>
+                  <p>{errors.message.message}</p>
                 </div>
               )}
               <div className="row">
