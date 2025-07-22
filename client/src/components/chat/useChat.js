@@ -1,145 +1,63 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import useSocket, { WS_EVENTS } from './useSocket';
+import useTyping from './useTyping';
+import useUserStatus from './useUserStatus';
+import useFormActions from './useFormAction';
 
-WebSocket.prototype.emit = function (event, data) {
-  this.send(JSON.stringify({ event, data }));
-};
-
-WebSocket.prototype.listen = function (eventName, callback) {
-  this._socketListeners = this._socketListeners || {};
-  this._socketListeners[eventName] = callback;
-};
+const createStateUpdaters = (currentUser) => ({
+  addChat: useCallback((setChats) => (chat) => 
+    setChats(prev => [...prev, chat]), []),
+  
+  updateTypingUsers: useCallback((setTypingUsers) => (users) => 
+    setTypingUsers(users.filter(u => u.name !== currentUser.name)), [currentUser.name])
+});
 
 export function useChat(user, reset, clearErrors) {
   const [users, setUsers] = useState([]);
   const [chats, setChats] = useState([]);
   const [typingUsers, setTypingUsers] = useState([]);
-  const [isTyping, setIsTyping] = useState(false);
-  const socketRef = useRef(null);
+
+  const socket = useSocket(user);
+  const typing = useTyping(socket.emit);
+  const form = useFormActions(
+    reset,
+    clearErrors,
+    socket.emit,
+    typing.stopTyping
+  );
+
+  useUserStatus(user, socket.emit);
+
+  const stateUpdaters = createStateUpdaters(user);
+  const addChat = stateUpdaters.addChat(setChats);
+  const updateTypingUsers = stateUpdaters.updateTypingUsers(setTypingUsers);
 
   useEffect(() => {
-    if (!socketRef.current) {
-      const url = `ws://localhost:3001/server`;
-      socketRef.current = new WebSocket(url);
-
-      socketRef.current.onopen = () => {
-        console.log("Websocket is live");
-        socketRef.current.emit("add_user", { ...user });
-      };
-
-      socketRef.current.onmessage = (messageEvent) => {
-        try {
-          const { event, data } = JSON.parse(messageEvent.data);
-          socketRef.current._socketListeners?.[event](data);
-        } catch (error) {}
-      };
-    }
-
-    socketRef.current.listen("all_users", (data) => {
-      setUsers(data);
-    });
-
-    socketRef.current.listen("new_message", (data) => {
-      chats.push(data);
-      setChats(chats.slice());
-    });
-
-    socketRef.current.listen("show_typing_users", (data) => {
-      setTypingUsers(data.filter(x=> x.name !== user.name));
-    });
-  }, []);
+    socket.connect();
+    return socket.disconnect;
+  }, [socket.connect, socket.disconnect]);
 
   useEffect(() => {
-    const handleVisibilityChange = () => {
-      const isVisible = !document.hidden;
+    socket.listen(WS_EVENTS.ALL_USERS, setUsers);
+    socket.listen(WS_EVENTS.NEW_MESSAGE, addChat);
+    socket.listen(WS_EVENTS.SHOW_TYPING, updateTypingUsers);
+  }, [socket.listen, addChat, updateTypingUsers]);
 
-      if (
-        socketRef.current &&
-        socketRef.current.readyState === WebSocket.OPEN
-      ) {
-        if (isVisible) {
-          socketRef.current.emit("update_status", {
-            ...user,
-            status: "online",
-          });
-        } else {
-          socketRef.current.emit("update_status", {
-            ...user,
-            status: "offline",
-          });
-        }
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
+  useEffect(() => {
+    const cleanup = socket.disconnect;
+    window.addEventListener('beforeunload', cleanup);
     return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      cleanup();
+      window.removeEventListener('beforeunload', cleanup);
     };
-  }, []);
-
-  useEffect(() => {
-    window.addEventListener("beforeunload", removeUser);
-
-    return () => {
-      removeUser();
-      window.removeEventListener("beforeunload", removeUser);
-    };
-
-    function removeUser() {
-      if (
-        socketRef.current &&
-        socketRef.current.readyState === WebSocket.OPEN
-      ) {
-        socketRef.current.emit("remove_user", user.name);
-        socketRef.current = null;
-      }
-    }
-  }, []);
-
-  const onSubmit = (data) => {
-    stopTyping();
-    const { message } = data;
-    socketRef.current.emit("new_message", { message });
-    reset({ message: "" });
-    clearErrors();
-  };
-
-  const handleClearChat = () => {
-    reset({ message: "" });
-    clearErrors();
-  };
-
-  const startTyping = () => {
-    if (!isTyping) {
-      setIsTyping(true);
-      socketRef.current.emit("add_typing_users");
-      console.log("start typing");
-    }
-  };
-
-  const stopTyping = () => {
-    if (isTyping) {
-      setIsTyping(false);
-      socketRef.current.emit("remove_typing_users");
-      console.log("stop typing");
-    }
-  };
-
-  const handleTyping = (e) => {
-    if (e.target.value.trim().length > 0) {
-      startTyping();
-    } else {
-      stopTyping();
-    }
-  };
+  }, [socket.disconnect]);
 
   return {
     users,
     chats,
     typingUsers,
-    onSubmit,
-    handleClearChat,
-    handleTyping,
-    stopTyping,
+    onSubmit: form.onSubmit,
+    handleClearChat: form.handleClearChat,
+    handleTyping: typing.handleTyping,
   };
 }
