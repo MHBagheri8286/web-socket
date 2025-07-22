@@ -10,11 +10,12 @@ const useFormActions = (reset, clearErrors, emit, stopTyping) => {
     }, [emit, reset, clearErrors, stopTyping]);
   
     const handleClearChat = useCallback(() => {
+      stopTyping();
       reset({ message: "" });
       clearErrors();
-    }, [reset, clearErrors]);
+    }, [reset, clearErrors, stopTyping]);
   
-    return { onSubmit, handleClearChat };
+    return { onSubmit, handleClearChat, };
   };
 
   export default useFormActions;
