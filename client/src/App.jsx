@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   BrowserRouter,
   Navigate,
@@ -6,8 +6,8 @@ import {
   Routes,
   useNavigate,
 } from "react-router-dom";
-import Chat from "./components/chat/Chat";
-import Registration from "./components/Registration";
+import Chat from "./components/chat";
+import Registration from "./components/registration";
 
 const App = () => {
   const navigate = useNavigate();
