@@ -1,0 +1,35 @@
+.registration-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.registration-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.registration-header {
+  background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-info) 100%);
+  color: white;
+  text-align: center;
+  padding: 2rem 1rem;
+}
+
+.registration-header h2 {
+  margin-bottom: 0.5rem;
+  font-weight: 300;
+}
+
+.registration-header p {
+  margin-bottom: 0;
+  opacity: 0.9;
+}
+
+.registration-body .input-group input{
+  font-size: 14px;
+}
