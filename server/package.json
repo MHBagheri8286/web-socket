@@ -7,10 +7,11 @@
     "start": "nodemon index.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Mohammad Bagheri",
   "license": "ISC",
   "dependencies": {
     "express": "^5.1.0",
+    "jest": "^30.0.5",
     "ws": "^8.18.3"
   }
 }
