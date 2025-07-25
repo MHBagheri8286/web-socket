@@ -94,4 +94,26 @@ describe("UserManager", () => {
       expect(userManager.typingUsers).toContain(mockWs2);
     });
   });
+
+  describe('removeTypingUser', () => {
+    beforeEach(() => {
+      userManager.typingUsers.push(mockWs1, mockWs2);
+    });
+
+    it('should remove a typing user', () => {
+      userManager.removeTypingUser(mockWs1);
+
+      expect(userManager.typingUsers).toHaveLength(1);
+      expect(userManager.typingUsers[0]).toBe(mockWs2);
+    });
+
+    it('should not remove anything if user is not in typing list', () => {
+      const mockWs3 = { user: { name: 'Charlie' } };
+      userManager.removeTypingUser(mockWs3);
+
+      expect(userManager.typingUsers).toHaveLength(2);
+      expect(userManager.typingUsers).toContain(mockWs1);
+      expect(userManager.typingUsers).toContain(mockWs2);
+    });
+  });
 });
