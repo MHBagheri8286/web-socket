@@ -40,4 +40,32 @@ describe('UserManager', () => {
       expect(mockWs2.user).toEqual(userData2);
     });
   });
+
+  describe('removeUser', () => {
+    beforeEach(() => {
+      userManager.allUsers.push(mockWs1, mockWs2);
+    });
+
+    it('should remove a user by name', () => {
+      userManager.removeUser('Alice');
+
+      expect(userManager.allUsers).toHaveLength(1);
+      expect(userManager.allUsers[0]).toBe(mockWs2);
+    });
+
+    it('should not remove anything if user name does not exist', () => {
+      userManager.removeUser('Charlie');
+
+      expect(userManager.allUsers).toHaveLength(2);
+      expect(userManager.allUsers).toContain(mockWs1);
+      expect(userManager.allUsers).toContain(mockWs2);
+    });
+
+    it('should handle empty user list', () => {
+      userManager.allUsers = [];
+      userManager.removeUser('Alice');
+
+      expect(userManager.allUsers).toHaveLength(0);
+    });
+  });
 });
