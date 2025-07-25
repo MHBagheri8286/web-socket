@@ -1,0 +1,43 @@
+const UserManager = require('../modules/UserManager');
+
+describe('UserManager', () => {
+  let userManager;
+  let mockWs1, mockWs2;
+
+  beforeEach(() => {
+    userManager = new UserManager();
+    mockWs1 = {
+      user: { name: 'Alice', status: 'online' }
+    };
+    mockWs2 = {
+      user: { name: 'Bob', status: 'online' }
+    };
+  });
+
+  describe('addUser', () => {
+    it('should add a user to the allUsers array', () => {
+      const userData = { name: 'Alice', status: 'online' };
+      const mockWs = {};
+
+      userManager.addUser(mockWs, userData);
+
+      expect(mockWs.user).toEqual(userData);
+      expect(userManager.allUsers).toContain(mockWs);
+      expect(userManager.allUsers).toHaveLength(1);
+    });
+
+    it('should add multiple users', () => {
+      const userData1 = { name: 'Alice', status: 'online' };
+      const userData2 = { name: 'Bob', status: 'away' };
+      const mockWs1 = {};
+      const mockWs2 = {};
+
+      userManager.addUser(mockWs1, userData1);
+      userManager.addUser(mockWs2, userData2);
+
+      expect(userManager.allUsers).toHaveLength(2);
+      expect(mockWs1.user).toEqual(userData1);
+      expect(mockWs2.user).toEqual(userData2);
+    });
+  });
+});
