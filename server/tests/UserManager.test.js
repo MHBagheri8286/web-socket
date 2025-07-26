@@ -164,4 +164,32 @@ describe("UserManager", () => {
       expect(userManager.messages[1]).toEqual({ content: message2, user: user2 });
     });
   });
+
+
+  describe('getTypingUsers', () => {
+    it('should return empty array when no typing users', () => {
+      const typingUsers = userManager.getTypingUsers();
+
+      expect(typingUsers).toEqual([]);
+    });
+
+    it('should return array of typing user objects', () => {
+      userManager.typingUsers.push(mockWs1, mockWs2);
+
+      const typingUsers = userManager.getTypingUsers();
+
+      expect(typingUsers).toHaveLength(2);
+      expect(typingUsers[0]).toEqual({ name: 'Alice', status: 'online' });
+      expect(typingUsers[1]).toEqual({ name: 'Bob', status: 'online' });
+    });
+
+    it('should return copies of user objects, not references', () => {
+      userManager.typingUsers.push(mockWs1);
+
+      const typingUsers = userManager.getTypingUsers();
+      typingUsers[0].name = 'Modified';
+
+      expect(mockWs1.user.name).toBe('Alice');
+    });
+  });
 });
