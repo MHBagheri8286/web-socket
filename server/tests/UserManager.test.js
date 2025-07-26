@@ -116,4 +116,52 @@ describe("UserManager", () => {
       expect(userManager.typingUsers).toContain(mockWs2);
     });
   });
+
+  describe('updateUserStatus', () => {
+    beforeEach(() => {
+      userManager.allUsers.push(mockWs1, mockWs2);
+    });
+
+    it('should update user status', () => {
+      userManager.updateUserStatus('Alice', 'away');
+
+      expect(mockWs1.user.status).toBe('away');
+    });
+
+    it('should not update status if user does not exist', () => {
+      userManager.updateUserStatus('Charlie', 'away');
+
+      expect(mockWs1.user.status).toBe('online');
+      expect(mockWs2.user.status).toBe('online');
+    });
+  });
+
+  describe('addMessage', () => {
+    it('should add a message to the messages array', () => {
+      const user = { name: 'Alice', status: 'online' };
+      const message = 'Hello, world!';
+
+      userManager.addMessage(user, message);
+
+      expect(userManager.messages).toHaveLength(1);
+      expect(userManager.messages[0]).toEqual({
+        content: message,
+        user: user
+      });
+    });
+
+    it('should add multiple messages', () => {
+      const user1 = { name: 'Alice', status: 'online' };
+      const user2 = { name: 'Bob', status: 'online' };
+      const message1 = 'Hello!';
+      const message2 = 'Hi there!';
+
+      userManager.addMessage(user1, message1);
+      userManager.addMessage(user2, message2);
+
+      expect(userManager.messages).toHaveLength(2);
+      expect(userManager.messages[0]).toEqual({ content: message1, user: user1 });
+      expect(userManager.messages[1]).toEqual({ content: message2, user: user2 });
+    });
+  });
 });
