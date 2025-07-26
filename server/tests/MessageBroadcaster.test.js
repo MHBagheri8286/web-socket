@@ -174,30 +174,36 @@ describe("MessageBroadcaster", () => {
     });
   });
 
-  describe('broadcastTypingUsers', () => {
-    it('should broadcast typing users with correct event type', () => {
+  describe("broadcastTypingUsers", () => {
+    it("should broadcast typing users with correct event type", () => {
       broadcaster.broadcastTypingUsers();
 
       expect(mockUserManager.getTypingUsers).toHaveBeenCalled();
-      expect(mockWs1.send).toHaveBeenCalledWith(JSON.stringify({
-        event: 'show_typing_users',
-        data: [{ name: 'Alice', status: 'online' }]
-      }));
-      expect(mockWs2.send).toHaveBeenCalledWith(JSON.stringify({
-        event: 'show_typing_users',
-        data: [{ name: 'Alice', status: 'online' }]
-      }));
+      expect(mockWs1.send).toHaveBeenCalledWith(
+        JSON.stringify({
+          event: "show_typing_users",
+          data: [{ name: "Alice", status: "online" }],
+        })
+      );
+      expect(mockWs2.send).toHaveBeenCalledWith(
+        JSON.stringify({
+          event: "show_typing_users",
+          data: [{ name: "Alice", status: "online" }],
+        })
+      );
     });
 
-    it('should handle no typing users', () => {
+    it("should handle no typing users", () => {
       mockUserManager.getTypingUsers.mockReturnValue([]);
 
       broadcaster.broadcastTypingUsers();
 
-      expect(mockWs1.send).toHaveBeenCalledWith(JSON.stringify({
-        event: 'show_typing_users',
-        data: []
-      }));
+      expect(mockWs1.send).toHaveBeenCalledWith(
+        JSON.stringify({
+          event: "show_typing_users",
+          data: [],
+        })
+      );
     });
   });
 });
