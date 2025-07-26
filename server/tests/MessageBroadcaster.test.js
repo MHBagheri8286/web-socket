@@ -103,4 +103,28 @@ describe('MessageBroadcaster', () => {
       }));
     });
   });
+
+  describe('broadcastAllUsers', () => {
+    it('should broadcast all users with correct event type', () => {
+      broadcaster.broadcastAllUsers();
+
+      expect(mockUserManager.getAllUsers).toHaveBeenCalled();
+      expect(mockWs1.send).toHaveBeenCalledWith(JSON.stringify({
+        event: 'all_users',
+        data: [
+          { name: 'Alice', status: 'online' },
+          { name: 'Bob', status: 'online' },
+          { name: 'Charlie', status: 'offline' }
+        ]
+      }));
+      expect(mockWs2.send).toHaveBeenCalledWith(JSON.stringify({
+        event: 'all_users',
+        data: [
+          { name: 'Alice', status: 'online' },
+          { name: 'Bob', status: 'online' },
+          { name: 'Charlie', status: 'offline' }
+        ]
+      }));
+    });
+  });
 });
