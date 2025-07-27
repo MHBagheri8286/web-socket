@@ -167,4 +167,26 @@ describe("WebSocketEventHandler", () => {
       expect(mockBroadcaster.broadcastAllUsers).not.toHaveBeenCalled();
     });
   });
+
+  describe("handleAddUser", () => {
+    it("should add user and broadcast all users", () => {
+      const userData = { name: "Bob", status: "online" };
+
+      eventHandler.handleAddUser(mockWs, userData);
+
+      expect(mockUserManager.addUser).toHaveBeenCalledWith(mockWs, userData);
+      expect(mockBroadcaster.broadcastAllUsers).toHaveBeenCalled();
+    });
+  });
+
+  describe("handleRemoveUser", () => {
+    it("should remove user and broadcast all users", () => {
+      const userName = "Bob";
+
+      eventHandler.handleRemoveUser(userName);
+
+      expect(mockUserManager.removeUser).toHaveBeenCalledWith(userName);
+      expect(mockBroadcaster.broadcastAllUsers).toHaveBeenCalled();
+    });
+  });
 });
