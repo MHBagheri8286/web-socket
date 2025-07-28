@@ -207,4 +207,71 @@ describe("WebSocketEventHandler", () => {
       expect(mockBroadcaster.broadcastTypingUsers).toHaveBeenCalled();
     });
   });
+
+  describe("handleNewMessage", () => {
+    it("should add message and broadcast new message", () => {
+      const data = { message: "Hello world!" };
+
+      eventHandler.handleNewMessage(mockWs, data);
+
+      expect(mockUserManager.addMessage).toHaveBeenCalledWith(
+        mockWs.user,
+        "Hello world!"
+      );
+      expect(mockBroadcaster.broadcastNewMessage).toHaveBeenCalledWith(
+        mockWs.user,
+        "Hello world!"
+      );
+    });
+
+    it("should handle empty message", () => {
+      const data = { message: "" };
+
+      eventHandler.handleNewMessage(mockWs, data);
+
+      expect(mockUserManager.addMessage).toHaveBeenCalledWith(mockWs.user, "");
+      expect(mockBroadcaster.broadcastNewMessage).toHaveBeenCalledWith(
+        mockWs.user,
+        ""
+      );
+    });
+  });
+
+  describe("handleUpdateStatus", () => {
+    it("should update user status and broadcast all users", () => {
+      const data = { name: "Alice", status: "away" };
+
+      eventHandler.handleUpdateStatus(data);
+
+      expect(mockUserManager.updateUserStatus).toHaveBeenCalledWith(
+        "Alice",
+        "away"
+      );
+      expect(mockBroadcaster.broadcastAllUsers).toHaveBeenCalled();
+    });
+  });
+
+  describe("error handling in event handlers", () => {
+    it("should handle errors in individual event handlers", () => {
+      mockUserManager.addUser.mockImplementation(() => {
+        throw new Error("UserManager error");
+      });
+
+      const consoleSpy = jest.spyOn(console, "error").mockImplementation();
+
+      const messageData = JSON.stringify({
+        event: "add_user",
+        data: { name: "Bob", status: "online" },
+      });
+
+      eventHandler.handleMessage(mockWs, messageData);
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Error handling message:",
+        expect.any(Error)
+      );
+
+      consoleSpy.mockRestore();
+    });
+  });
 });
