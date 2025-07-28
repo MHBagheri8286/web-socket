@@ -189,4 +189,22 @@ describe("WebSocketEventHandler", () => {
       expect(mockBroadcaster.broadcastAllUsers).toHaveBeenCalled();
     });
   });
+
+  describe("handleAddTypingUser", () => {
+    it("should add typing user and broadcast typing users", () => {
+      eventHandler.handleAddTypingUser(mockWs);
+
+      expect(mockUserManager.addTypingUser).toHaveBeenCalledWith(mockWs);
+      expect(mockBroadcaster.broadcastTypingUsers).toHaveBeenCalled();
+    });
+  });
+
+  describe("handleRemoveTypingUser", () => {
+    it("should remove typing user and broadcast typing users", () => {
+      eventHandler.handleRemoveTypingUser(mockWs);
+
+      expect(mockUserManager.removeTypingUser).toHaveBeenCalledWith(mockWs);
+      expect(mockBroadcaster.broadcastTypingUsers).toHaveBeenCalled();
+    });
+  });
 });
