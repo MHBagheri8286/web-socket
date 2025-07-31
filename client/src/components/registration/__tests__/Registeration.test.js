@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import Registration from '../src/components/registration';
+import Registration from '../index';
 
 const TestWrapper = ({ children }) => <BrowserRouter>{children}</BrowserRouter>;
 
@@ -59,7 +59,6 @@ describe('Registration', () => {
     const input = screen.getByPlaceholderText('Enter a unique username...');
     fireEvent.change(input, { target: { value: 'john123' } });
     fireEvent.click(screen.getByText('Join Chat Room'));
-
     await waitFor(() => {
       expect(mockOnRegister).toHaveBeenCalledWith({
         name: 'john123',
