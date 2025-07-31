@@ -100,4 +100,81 @@ describe('ChatServer', () => {
       expect(chatServer.wss).toBe(mockWss);
     });
   });
+
+  describe('setupExpress', () => {
+    it('should setup static file serving', () => {
+      expect(mockApp.use).toHaveBeenCalledWith('/', 'static-middleware');
+      expect(express.static).toHaveBeenCalledWith(
+        expect.stringContaining('client/dist')
+      );
+    });
+  });
+
+  describe('setupWebSocket', () => {
+    it('should setup WebSocket connection handler', () => {
+      expect(mockWss.on).toHaveBeenCalledWith('connection', expect.any(Function));
+    });
+
+    it('should setup HTTP upgrade handler', () => {
+      expect(mockServer.on).toHaveBeenCalledWith('upgrade', expect.any(Function));
+    });
+
+    it('should handle WebSocket connection and message events', () => {
+      // Get the connection handler
+      const connectionHandler = mockWss.on.mock.calls.find(
+        call => call[0] === 'connection'
+      )[1];
+
+      const mockWs = {
+        on: jest.fn()
+      };
+
+      connectionHandler(mockWs);
+
+      expect(mockWs.on).toHaveBeenCalledWith('message', expect.any(Function));
+
+      // Test message handler
+      const messageHandler = mockWs.on.mock.calls.find(
+        call => call[0] === 'message'
+      )[1];
+
+      const testMessage = 'test message';
+      messageHandler(testMessage);
+
+      expect(mockEventHandler.handleMessage).toHaveBeenCalledWith(mockWs, testMessage);
+    });
+
+    it('should handle HTTP upgrade correctly', () => {
+      // Get the upgrade handler
+      const upgradeHandler = mockServer.on.mock.calls.find(
+        call => call[0] === 'upgrade'
+      )[1];
+
+      const mockRequest = {};
+      const mockSocket = {};
+      const mockHead = {};
+      const mockWs = {};
+
+      mockWss.handleUpgrade.mockImplementation((request, socket, head, callback) => {
+        callback(mockWs);
+      });
+
+      mockWss.emit = jest.fn();
+
+      upgradeHandler(mockRequest, mockSocket, mockHead);
+
+      expect(mockWss.handleUpgrade).toHaveBeenCalledWith(
+        mockRequest, 
+        mockSocket, 
+        mockHead, 
+        expect.any(Function)
+      );
+
+      // Simulate the callback being called
+      const upgradeCallback = mockWss.handleUpgrade.mock.calls[0][3];
+      upgradeCallback(mockWs);
+
+      expect(mockWss.emit).toHaveBeenCalledWith('connection', mockWs, mockRequest);
+    });
+  });
 });
