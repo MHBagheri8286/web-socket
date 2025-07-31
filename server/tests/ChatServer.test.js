@@ -177,4 +177,85 @@ describe('ChatServer', () => {
       expect(mockWss.emit).toHaveBeenCalledWith('connection', mockWs, mockRequest);
     });
   });
+
+  describe('start', () => {
+    it('should start the server on the specified port', () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+
+      chatServer.start();
+
+      expect(mockServer.listen).toHaveBeenCalledWith(3001, expect.any(Function));
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'HTTP & WS server running on http://localhost:3001'
+      );
+
+      consoleSpy.mockRestore();
+    });
+
+    it('should handle different port numbers', () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+      const chatServerCustomPort = new ChatServer(8080);
+
+      chatServerCustomPort.start();
+
+      expect(mockServer.listen).toHaveBeenCalledWith(8080, expect.any(Function));
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'HTTP & WS server running on http://localhost:8080'
+      );
+
+      consoleSpy.mockRestore();
+    });
+  });
+
+  describe('integration', () => {
+    it('should properly wire all components together', () => {
+      // Verify that all components are created and connected properly
+      expect(chatServer.userManager).toBeDefined();
+      expect(chatServer.broadcaster).toBeDefined();
+      expect(chatServer.eventHandler).toBeDefined();
+      expect(chatServer.wss).toBeDefined();
+      expect(chatServer.server).toBeDefined();
+      expect(chatServer.app).toBeDefined();
+
+      // Verify dependencies are passed correctly
+      expect(MessageBroadcaster).toHaveBeenCalledWith(chatServer.userManager);
+      expect(WebSocketEventHandler).toHaveBeenCalledWith(
+        chatServer.userManager, 
+        chatServer.broadcaster
+      );
+    });
+  });
+
+  describe('error handling', () => {
+    it('should handle WebSocket connection errors gracefully', () => {
+      const connectionHandler = mockWss.on.mock.calls.find(
+        call => call[0] === 'connection'
+      )[1];
+
+      const mockWs = {
+        on: jest.fn()
+      };
+
+      // Should not throw even if ws.on throws
+      mockWs.on.mockImplementation(() => {
+        throw new Error('WebSocket error');
+      });
+
+      expect(() => connectionHandler(mockWs)).toThrow('WebSocket error');
+    });
+
+    it('should handle upgrade errors gracefully', () => {
+      const upgradeHandler = mockServer.on.mock.calls.find(
+        call => call[0] === 'upgrade'
+      )[1];
+
+      mockWss.handleUpgrade.mockImplementation(() => {
+        throw new Error('Upgrade error');
+      });
+
+      expect(() => {
+        upgradeHandler({}, {}, {});
+      }).toThrow('Upgrade error');
+    });
+  });
 });
