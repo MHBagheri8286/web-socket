@@ -1,43 +1,24 @@
 import { renderHook, act } from '@testing-library/react';
 import useSocket from '../useSocket';
 
-// Create a shared mock that we can assert on
-let mockWebSocketInstance;
-
-const createMockWebSocket = () => {
-  const ws = {
-    send: jest.fn(),
-    close: jest.fn(),
-    readyState: 1,
-    onopen: null,
-    onmessage: null,
-    _listeners: {}
-  };
-  
-  // Add the emit method that extendWebSocket adds
-  ws.emit = (event, data) => {
-    if (ws.readyState === 1) { // WebSocket.OPEN
-      ws.send(JSON.stringify({ event, data }));
-    }
-  };
-  
-  ws.listen = (eventName, callback) => {
-    ws._listeners = ws._listeners || {};
-    ws._listeners[eventName] = callback;
-  };
-  
-  mockWebSocketInstance = ws;
-  return ws;
+// Simple WebSocket mock
+const mockWebSocket = {
+  send: jest.fn(),
+  close: jest.fn(),
+  readyState: 1,
+  onopen: null,
+  onmessage: null
 };
 
-global.WebSocket = jest.fn(() => createMockWebSocket());
+global.WebSocket = jest.fn(() => mockWebSocket);
+global.WebSocket.OPEN = 1;
 
 describe('useSocket', () => {
   const mockUser = { name: 'test', status: 'online' };
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockWebSocketInstance = null;
+    mockWebSocket.readyState = 1;
   });
 
   test('creates socket connection', () => {
@@ -47,7 +28,24 @@ describe('useSocket', () => {
       result.current.connect();
     });
 
-    expect(global.WebSocket).toHaveBeenCalled();
+    expect(global.WebSocket).toHaveBeenCalledWith('ws://localhost:3001/server');
+  });
+
+  test('emits add_user on connection', () => {
+    const { result } = renderHook(() => useSocket(mockUser));
+    
+    act(() => {
+      result.current.connect();
+    });
+
+    // Simulate connection opening
+    act(() => {
+      mockWebSocket.onopen();
+    });
+
+    expect(mockWebSocket.send).toHaveBeenCalledWith(
+      JSON.stringify({ event: 'add_user', data: mockUser })
+    );
   });
 
   test('sends message when emit is called', () => {
@@ -58,8 +56,19 @@ describe('useSocket', () => {
       result.current.emit('test_event', { data: 'test' });
     });
 
-    expect(mockWebSocketInstance.send).toHaveBeenCalledWith(
+    expect(mockWebSocket.send).toHaveBeenCalledWith(
       JSON.stringify({ event: 'test_event', data: { data: 'test' } })
     );
+  });
+
+  test('closes connection on disconnect', () => {
+    const { result } = renderHook(() => useSocket(mockUser));
+    
+    act(() => {
+      result.current.connect();
+      result.current.disconnect();
+    });
+
+    expect(mockWebSocket.close).toHaveBeenCalled();
   });
 });
