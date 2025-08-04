@@ -56,7 +56,103 @@ client/
 ├── package.json              # Dependencies and scripts
 ├── tsconfig.json             # TypeScript configuration
 └── webpack.config.js         # Webpack configuration
+
+server/
+├── modules/
+│   ├── ChatServer.js          # Main server class
+│   ├── UserManager.js         # User state management
+│   ├── MessageBroadcaster.js  # WebSocket broadcasting
+│   ├── WebSocketEventHandler.js # Event handling logic
+│   └── index.js               # Module exports
+├── tests/                     # Server test files
+├── index.js                   # Server entry point
+└── package.json              # Server dependencies
 ```
+
+## 🧪 Test Structure
+
+The application includes comprehensive test coverage for both client and server components using Jest and React Testing Library.
+
+### Client Tests (`client/src/`)
+
+```
+src/
+├── __tests__/
+│   └── App.test.jsx           # Main app routing tests
+└── components/
+    ├── chat/
+    │   └── __tests__/
+    │       ├── ChatSection.test.jsx      # Chat UI component tests
+    │       ├── OnlineUserSection.test.jsx # Users sidebar tests
+    │       ├── useFormAction.test.js     # Form handling hook tests
+    │       ├── useSocket.test.js         # WebSocket hook tests
+    │       └── useTyping.test.js         # Typing indicator tests
+    └── registration/
+        └── __tests__/
+            └── Registration.test.js      # Registration form tests
+```
+
+### Server Tests (`server/tests/`)
+
+```
+tests/
+├── ChatServer.test.js         # Main server integration tests
+├── UserManager.test.js        # User state management tests
+├── MessageBroadcaster.test.js # Broadcasting logic tests
+└── WebSocketEventHandler.test.js # Event handling tests
+```
+
+### Test Categories
+
+#### **Frontend Tests**
+- **Component Tests**: UI rendering, user interactions, prop handling
+- **Hook Tests**: Custom hook logic, state management, side effects
+- **Integration Tests**: Component interaction, routing, form submission
+
+#### **Backend Tests**
+- **Unit Tests**: Individual class methods, data manipulation
+- **Integration Tests**: WebSocket connections, event handling
+- **Mock Tests**: External dependencies, WebSocket server behavior
+
+### Test Configuration
+
+#### Client Testing Setup
+- **Jest** - Test runner and assertion library
+- **React Testing Library** - Component testing utilities
+- **@testing-library/user-event** - User interaction simulation
+- **jsdom** - DOM environment for testing
+
+#### Server Testing Setup
+- **Jest** - Test runner and assertion library
+- **WebSocket Mocking** - Simulated WebSocket connections
+- **Module Mocking** - Isolated unit testing
+
+### Running Tests
+
+#### Client Tests
+```bash
+cd client
+npm test                 # Run tests once
+npm run test:watch      # Run tests in watch mode
+npm run test:coverage   # Run tests with coverage report
+```
+
+#### Server Tests
+```bash
+cd server
+npm test                 # Run tests once
+npm run test:watch      # Run tests in watch mode
+npm run test:coverage   # Run tests with coverage report
+```
+
+### Test Coverage
+
+The test suite covers:
+- ✅ **Components**: All React components with props and state
+- ✅ **Custom Hooks**: WebSocket, form handling, typing, user status
+- ✅ **Server Logic**: User management, message broadcasting, event handling
+- ✅ **Error Handling**: Invalid inputs, connection failures, edge cases
+- ✅ **Integration**: Component interaction, WebSocket communication
 
 ## 🚦 Getting Started
 
@@ -89,8 +185,18 @@ client/
 
 ### Available Scripts
 
+#### Client Scripts
 - `npm start` - Start development server with hot reload
 - `npm run build` - Build production bundle
+- `npm test` - Run test suite
+- `npm run test:watch` - Run tests in watch mode
+- `npm run test:coverage` - Generate test coverage report
+
+#### Server Scripts
+- `npm start` - Start server with nodemon
+- `npm test` - Run server tests
+- `npm run test:watch` - Run server tests in watch mode
+- `npm run test:coverage` - Generate server test coverage
 
 ## 🔌 WebSocket API
 
@@ -214,6 +320,11 @@ This project uses:
 - Bootstrap CSS is loaded from CDN
 - Custom styles are in component-specific CSS files
 - Check browser developer tools for CSS conflicts
+
+### Test Issues
+- Ensure all dependencies are installed
+- Check test configuration in `jest.config.js`
+- Verify mock implementations are up to date
 
 ## 🙏 Acknowledgments
 
